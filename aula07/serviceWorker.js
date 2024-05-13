@@ -1,10 +1,11 @@
-const CACHE_NAME = "aula07-pwa-cache-v1";
+const CACHE_NAME = "aula07-pwa-cache-v1.1";
 const filesToCache = [
   "/",
   "index.html",
   "style.css",
   "script.js",
   "manifest.json",
+  "arrow.svg",
   "images/icon.svg",
   "images/icon-512.svg",
   "images/screenshot1.png",
@@ -12,6 +13,9 @@ const filesToCache = [
 ];
 
 self.addEventListener("install", async (event) => {
+
+  console.log("Service worker installing...");
+
   try {
     const cache = await caches.open(CACHE_NAME);
     await cache.addAll(filesToCache);
@@ -24,19 +28,11 @@ self.addEventListener("activate", (event) => {
   console.log("Service worker activated");
 });
 
-// self.addEventListener("fetch", async (event) => {
-//   try {
-//     const response = await caches.match(event.request);
-//     if (response) return response;
-//     return fetch(event.request);
-//   } catch (error) {
-//     console.error("Error fecthing resources:", error);
-//   }
-// });
-
 self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     try {
+
+    console.log("fetching:", event.request);
       const networkResponse = await fetch(event.request);
       return networkResponse;
     } catch (error) {
