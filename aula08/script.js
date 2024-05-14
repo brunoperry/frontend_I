@@ -77,7 +77,6 @@ class WordCounter extends HTMLElement {
 
     static observedAttributes = ["name"];
 
-
     innerText;
 
     constructor() {
@@ -133,7 +132,7 @@ customElements.define('word-counter', WordCounter);
 window.onload = () => { 
 
     const wordCounter = document.querySelector("word-counter");
-    console.log(WordCounter.getValue());
+    console.log(wordCounter.numWords);
 
     wordCounter.setAttribute("name", "changed");    
     // wordCounter.setAttribute("name", "chenged");
