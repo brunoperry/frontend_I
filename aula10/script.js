@@ -53,7 +53,6 @@ template.innerHTML = `
         
     </div>
 `;
-
 const itemTemplate = document.createElement('template');
 itemTemplate.innerHTML = `
         <style>
@@ -74,26 +73,26 @@ class WebGallery extends HTMLElement {
     constructor() {
         super();
 
-        this.shadowRoot = this.attachShadow({ mode: 'open' });
+        this.shadowRoot = this.attachShadow({ mode: 'closed' });
         this.shadowRoot.appendChild(template.content.cloneNode(true));
     }
 
     connectedCallback() {
 
-        const imageContainer = this.shadowRoot.querySelector("#images-container");
+        const imageContainer = this.shadowRoot.querySelector('#images-container');
         const item = itemTemplate.content.cloneNode(true);
         imageContainer.appendChild(item);
 
-        this.shadowRoot.querySelector("#previous").onclick = () => {
-            console.log("previous clicked");
+        this.shadowRoot.querySelector('#previous').onclick = () => {
+            console.log('previous clicked');
         }
 
-        this.shadowRoot.querySelector("#next").onclick = () => {
-            console.log("next clicked");
+        this.shadowRoot.querySelector('#next').onclick = () => {
+            console.log('next clicked');
         }
 
-        this.shadowRoot.querySelector("#play-pause").onclick = () => {
-            console.log("play pause clicked");
+        this.shadowRoot.querySelector('#play-pause').onclick = () => {
+            console.log('play pause clicked');
         }
     }
 }
