@@ -84,11 +84,11 @@ class WebGallery extends HTMLElement {
 
         this.shadowRoot = this.attachShadow({ mode: 'closed' });
         this.shadowRoot.appendChild(template.content.cloneNode(true));
+        this.#imagesContainer = this.shadowRoot.querySelector("#images-container");
     }
 
     connectedCallback() {
 
-        this.#imagesContainer = this.shadowRoot.querySelector("#images-container");
 
         this.shadowRoot.querySelector('#previous').onclick = () => {
             console.log('previous clicked');
@@ -112,7 +112,7 @@ class WebGallery extends HTMLElement {
                 this.#render();
                 break;
             case 'current-item':
-                this.#currentItemIndex = newVal;
+                this.#currentItemIndex = parseInt(newVal);
                 this.#render();
                 break;
             
@@ -124,13 +124,16 @@ class WebGallery extends HTMLElement {
     //PRIVATE
     #render() {
 
+        if(!this.#galleryData) return;
+
         this.#items = [];
         this.#imagesContainer.innerHTML = ''; 
         this.#galleryData.forEach((item, index) => {
 
             const clone = itemTemplate.content.cloneNode(true);
             const element = clone.querySelector(".item");
-            if(index === this.#currentItemIndex) element.style.opacity = 1;
+
+            if(index === this.#currentItemIndex)  element.style.opacity = 1;
             this.#items.push(element);
             element.style.backgroundImage = `url(${item.imageUrl})`;
 
@@ -146,8 +149,13 @@ class WebGallery extends HTMLElement {
             clearInterval(this.#intervalID);
             this.#intervalID = null;
         } else {
-            this.#intervalID = setInterval(() => {
 
+            if(this.#currentItemIndex >= this.#items.length || this.#currentItemIndex < 0) {
+                this.#currentItemIndex = 0;
+                this.#items[this.#currentItemIndex].style.opacity = 1;
+            }
+
+            this.#intervalID = setInterval(() => {
                 this.#items[this.#currentItemIndex].style.opacity = 0;
                 this.#currentItemIndex++;
                 if(this.#currentItemIndex >= this.#items.length) this.#currentItemIndex = 0;
@@ -167,10 +175,11 @@ class WebGallery extends HTMLElement {
     }
 
     get currentItem() {
-        return this.getAttribute('current-index');
+        return this.getAttribute('current-item');
     }
     set currentItem(value) {
-        this.setAttribute('current-index', value);
+
+        this.setAttribute('current-item', parseInt(value));
     }
 }
 customElements.define('web-gallery', WebGallery);
