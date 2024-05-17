@@ -28,3 +28,10 @@ web-gallery {
     width: 500px;
     height: 500px;
 }
+
+#play-pause,
+web-toggle-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}

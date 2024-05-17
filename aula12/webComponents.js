@@ -8,9 +8,14 @@ template.innerHTML = `
         }
         button {
             border: none;
-            background-color: green;
             padding: 10px 20px;
             cursor: pointer;
+            background-color: transparent;
+            width: 90px;
+            height: 64px;
+        }
+        button:active {
+            transform: scale(0.9);
         }
 
         /*CLASSES*/
@@ -28,17 +33,11 @@ template.innerHTML = `
             position: relative;
             display: flex;
             flex: 1;
-            background-color: red;
+            background-color: black;
         }
         #controls {
             display: flex;
             justify-content: space-between;
-            background-color: blue;
-        }
-        #play-pause {
-            position: absolute;
-            top: 10px;
-            left: 10px;
         }
     </style>
     <div class="gallery">
@@ -46,12 +45,21 @@ template.innerHTML = `
         <div id="images-container"></div>
 
         <div id="controls">
-            <button id="previous">Previous</button>
-            <button id="next">Next</button>
+            <button id="previous">
+                <svg width="100%" height="100%" version="1.1" viewBox="0 0 94 64" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m78.719 0-31.719 32.183 31.719 31.817 15.281-15.328-16.62-16.672 16.62-16.672z" fill="#a80000"/>
+                    <path d="M 31.71889,0 0,32.18271 31.71889,64 47,48.672 30.37956,32 47,15.328 Z" fill="#a80000"/>
+                </svg>
+            </button>
+            <button id="next">
+                <svg style="transform: rotate(180deg)" width="100%" height="100%" version="1.1" viewBox="0 0 94 64" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m78.719 0-31.719 32.183 31.719 31.817 15.281-15.328-16.62-16.672 16.62-16.672z" fill="#a80000"/>
+                    <path d="M 31.71889,0 0,32.18271 31.71889,64 47,48.672 30.37956,32 47,15.328 Z" fill="#a80000"/>
+                </svg>
+            </button>
         </div>
 
-        <web-toggle-button id="play-pause"></web-toggle-button>
-        
+        <slot name="toggle-button">NEED TOGGLE BUTTON</slot>
     </div>
 `;
 const itemTemplate = document.createElement('template');
@@ -83,7 +91,7 @@ class WebGallery extends HTMLElement {
     constructor() {
         super();
 
-        this.shadowRoot = this.attachShadow({ mode: 'closed' });
+        this.shadowRoot = this.attachShadow({ mode: 'open' });
         this.shadowRoot.appendChild(template.content.cloneNode(true));
         this.#imagesContainer = this.shadowRoot.querySelector("#images-container");
     }
@@ -105,19 +113,25 @@ class WebGallery extends HTMLElement {
             this.#playPause();
         }
 
-        this.shadowRoot.querySelector('#play-pause').onclick = (ev) => {
-            console.log('play pause clicked');
-            this.#playPause();
 
-            if(this.#intervalID) ev.target.innerText = "STOP";
-            else ev.target.innerText = "PLAY";
+        const slotElement = this.shadowRoot.querySelector('slot[name="toggle-button"');
+        
 
-            const event = new CustomEvent('play-pause', {detail: {
-                    isPlaying: this.#intervalID !== null 
-                }});
-            this.dispatchEvent(event);
-        }
+        let toggleButton;
+        setTimeout(() => {
+            toggleButton = slotElement.assignedElements()[0];
+            toggleButton.addEventListener("toggle", (ev) => {
 
+                console.log(ev);
+                this.#playPause();
+                const event = new CustomEvent('play-pause', {detail: {
+                        isPlaying: this.#intervalID !== null 
+                    }});
+                this.dispatchEvent(event);
+            })
+        },0.1);
+
+        
     }
 
     async attributeChangedCallback(attrName, oldVal, newVal) {
@@ -218,6 +232,8 @@ toggleTemplate.innerHTML = `
 
     #icons-container {
         position: relative;
+        width: 98px;
+        height: 98px;
     }
 
     #icons-container svg {
@@ -244,18 +260,41 @@ class WebToggleButton extends HTMLElement {
 
     shadowRoot;
     #iconsContainer = null;
+    #toggled = true;
     constructor() {
         super();
         this.shadowRoot = this.attachShadow({ mode: 'closed' });
         this.shadowRoot.appendChild(toggleTemplate.content.cloneNode(true));
         this.#iconsContainer = this.shadowRoot.querySelector("#icons-container");
+            
+        this.toggle();
     }
 
     connectedCallback() {
 
+        console.log(this.#iconsContainer.children);
+        this.#iconsContainer.onclick = () => {
+
+            this.#toggled = !this.#toggled;
+            this.toggle();
+
+            const event = new CustomEvent('toggle');
+            this.dispatchEvent(event);
+        }
     }
 
-    attributeChangedCallback() {
+    toggle() {
+        if(this.#toggled) {
+            this.#iconsContainer.children[0].style.opacity = 1;
+            this.#iconsContainer.children[1].style.opacity = 0;
+        } else {
+            this.#iconsContainer.children[0].style.opacity = 0;
+            this.#iconsContainer.children[1].style.opacity = 1;
+        }
+    }
+
+    attributeChangedCallback(attrName, oldVal, newVal) {
+
 
     }
 }
