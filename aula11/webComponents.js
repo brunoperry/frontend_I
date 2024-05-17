@@ -50,7 +50,7 @@ template.innerHTML = `
             <button id="next">Next</button>
         </div>
 
-        <button id="play-pause">STOP</button>
+        <web-toggle-button id="play-pause"></web-toggle-button>
         
     </div>
 `;
@@ -79,6 +79,7 @@ class WebGallery extends HTMLElement {
     #intervalID = null;
     #items = [];
     #currentItemIndex = 0;
+
     constructor() {
         super();
 
@@ -89,18 +90,34 @@ class WebGallery extends HTMLElement {
 
     connectedCallback() {
 
-
         this.shadowRoot.querySelector('#previous').onclick = () => {
             console.log('previous clicked');
+            this.#currentItemIndex--;
+            if(this.#currentItemIndex < 0) this.#currentItemIndex = this.#items.length -1;
+            this.#render();
+            this.#playPause();
         }
 
         this.shadowRoot.querySelector('#next').onclick = () => {
             console.log('next clicked');
+            this.#currentItemIndex++;
+            this.#render();
+            this.#playPause();
         }
 
-        this.shadowRoot.querySelector('#play-pause').onclick = () => {
+        this.shadowRoot.querySelector('#play-pause').onclick = (ev) => {
             console.log('play pause clicked');
+            this.#playPause();
+
+            if(this.#intervalID) ev.target.innerText = "STOP";
+            else ev.target.innerText = "PLAY";
+
+            const event = new CustomEvent('play-pause', {detail: {
+                    isPlaying: this.#intervalID !== null 
+                }});
+            this.dispatchEvent(event);
         }
+
     }
 
     async attributeChangedCallback(attrName, oldVal, newVal) {
@@ -110,6 +127,12 @@ class WebGallery extends HTMLElement {
                 const req = await fetch(this.getAttribute('data-url'));
                 this.#galleryData = await req.json();
                 this.#render();
+
+                const event = new CustomEvent('ready', {detail: {
+                    numberOfImages: this.#items.length
+                }});
+                this.dispatchEvent(event);
+
                 break;
             case 'current-item':
                 this.#currentItemIndex = parseInt(newVal);
@@ -183,3 +206,57 @@ class WebGallery extends HTMLElement {
     }
 }
 customElements.define('web-gallery', WebGallery);
+
+
+
+
+
+
+const toggleTemplate = document.createElement('template');
+toggleTemplate.innerHTML = `
+<style>
+
+    #icons-container {
+        position: relative;
+    }
+
+    #icons-container svg {
+        position: absolute;
+    }
+</style>
+
+<div id="icons-container">
+
+    <svg width="58" height="64" version="1.1" viewBox="0 0 58 64" xmlns="http://www.w3.org/2000/svg">
+        <path d="m58 0h-21.75v64h21.75z" fill="#a80000"/>
+        <path d="m21.75 0h-21.75v64h21.75z" fill="#a80000"/>
+    </svg>
+
+    <svg width="58" height="64" version="1.1" viewBox="0 0 58 64" xmlns="http://www.w3.org/2000/svg">
+        <path d="m0 0 58 32-58 32z" fill="#a80000"/>
+    </svg>
+
+</div>
+`;
+class WebToggleButton extends HTMLElement {
+
+    static observedAttributes = [];
+
+    shadowRoot;
+    #iconsContainer = null;
+    constructor() {
+        super();
+        this.shadowRoot = this.attachShadow({ mode: 'closed' });
+        this.shadowRoot.appendChild(toggleTemplate.content.cloneNode(true));
+        this.#iconsContainer = this.shadowRoot.querySelector("#icons-container");
+    }
+
+    connectedCallback() {
+
+    }
+
+    attributeChangedCallback() {
+
+    }
+}
+customElements.define('web-toggle-button', WebToggleButton);
