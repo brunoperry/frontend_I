@@ -39,6 +39,7 @@ template.innerHTML = `
             position: absolute;
             top: 10px;
             left: 10px;
+            z-index: 9999;
         }
         #images-container {
             position: relative;
@@ -195,9 +196,8 @@ class WebGallery extends HTMLElement {
                 const customEvent = new CustomEvent("item-clicked", {detail: {
                     data: item
                 }})
-                this.dispatchEvent(customEvent);   
+                this.dispatchEvent(customEvent);
             }
-
             this.#imagesContainer.appendChild(clone);
         });
 
@@ -218,9 +218,11 @@ class WebGallery extends HTMLElement {
 
             this.#intervalID = setInterval(() => {
                 this.#items[this.#currentItemIndex].style.opacity = 0;
+                this.#items[this.#currentItemIndex].style.zIndex = 9000;
                 this.#currentItemIndex++;
                 if(this.#currentItemIndex >= this.#items.length) this.#currentItemIndex = 0;
                 this.#items[this.#currentItemIndex].style.opacity = 1;
+                this.#items[this.#currentItemIndex].style.zIndex = 9998;
 
                //...
             }, 2000);
@@ -325,24 +327,32 @@ customElements.define('web-toggle-button', WebToggleButton);
 
 const webGalleryDetailTemplate = document.createElement("template");
 webGalleryDetailTemplate.innerHTML = `
-
 <style>
 
+    @import url("system.css");
+
+    :host {
+
+        position: relative;
+    }
     #detail-container {
         width: 500px;
         height: 500px;
-        background: red;
+        background: orangered;
+    }
+
+    #close-detail {
+        position: absolute;
+        top: 10px;
+        right: 10px;
     }
 </style>
 
-<div id="detail-container">
-
-</div>
+<div id="detail-container"></div>
+<button id="close-detail">CLOSE</button>
 `
 
 class WebGalleryDetail extends HTMLElement {
-
-    // static observedAttributes = ['detail-data'];
 
     shadowRoot;
     #detailContainer = null;
@@ -353,17 +363,13 @@ class WebGalleryDetail extends HTMLElement {
         this.shadowRoot.appendChild(webGalleryDetailTemplate.content.cloneNode(true));
 
         this.#detailContainer = this.shadowRoot.querySelector("#detail-container");
+
+        this.shadowRoot.querySelector("button").onclick = () => {
+
+            const customEvent = new CustomEvent("close-detail");
+            this.dispatchEvent(customEvent);
+        }
     }
-
-    // connectedCallback() {
-
-    // }
-
-    // attributeChangedCallback(attrName, oldVal, newVal) {
-    //     console.log('oldVal', oldVal)
-    //     console.log(newVal)
-    //     this.#render(newVal);
-    // }
 
     #render() {
         this.#detailContainer.innerHTML = `
