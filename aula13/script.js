@@ -1,10 +1,16 @@
 window.onload = () => {
     const webGallery = document.querySelector("web-gallery");
+    const webGalleryDetail = document.querySelector("web-gallery-detail");
 
 
     webGallery.addEventListener("ready", (event) => {
         // console.log("gallery ready", event.detail.numberOfImages);
     });
+
+    webGallery.addEventListener("item-clicked", (event) => {
+
+        webGalleryDetail.data = event.detail.data;
+    })
     // webGallery.addEventListener("play-pause", (event) => {
     //     // console.log("gallery playing", event.detail.isPlaying);
     // });
