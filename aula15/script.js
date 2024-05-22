@@ -20,6 +20,7 @@ class Item {
         
         this.mouseUp = this.mouseUp.bind(this);
         this.mouseMove = this.mouseMove.bind(this);
+
         this.view.onmousedown = (ev) => this.#mouseDown(ev);
         this.view.onclick = () => {
             if(this.#currentX === 0) this.#callback("clicked");
@@ -36,6 +37,9 @@ class Item {
     }
 
     mouseUp() {
+
+        console.log(this);
+
         document.removeEventListener("mouseup", this.mouseUp);
         document.removeEventListener("mousemove", this.mouseMove);
 
@@ -47,6 +51,10 @@ class Item {
         this.#touchX = 0;
     }
     mouseMove(ev) {
+
+        console.log(this);
+
+
         this.#currentX = this.#touchX - ev.x;
         if(this.#currentX < 0) this.#currentX = 0;
         if(this.#currentX > this.#maxX) this.#currentX = this.#maxX;
