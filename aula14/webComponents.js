@@ -96,7 +96,7 @@ itemTemplate.innerHTML = `
 `
 class WebGallery extends HTMLElement {
 
-    static observedAttributes = ['data-url', 'current-item'];
+    static observedAttributes = ['current-item'];
 
     shadowRoot = null;
     #galleryData = null;
@@ -156,17 +156,7 @@ class WebGallery extends HTMLElement {
     async attributeChangedCallback(attrName, oldVal, newVal) {
 
         switch (attrName) {
-            case 'data-url':
-                const req = await fetch(this.getAttribute('data-url'));
-                this.#galleryData = await req.json();
-                this.#render();
-
-                const event = new CustomEvent('ready', {detail: {
-                    numberOfImages: this.#items.length
-                }});
-                this.dispatchEvent(event);
-
-                break;
+            
             case 'current-item':
                 this.#currentItemIndex = parseInt(newVal);
                 this.#render();
@@ -230,11 +220,16 @@ class WebGallery extends HTMLElement {
     }
 
     //SETTERS GETTERS
-    get dataURL() {
-        return this.getAttribute('data-url');
+    get data() {
+        return this.#galleryData;
     }
-    set dataURL(value) {
-        this.setAttribute('data-url', value);
+    set data(value) {
+        this.#galleryData = value;
+
+        const event = new CustomEvent('ready', {detail: {
+            numberOfImages: this.#items.length
+        }});
+        this.dispatchEvent(event);
     }
 
     get currentItem() {

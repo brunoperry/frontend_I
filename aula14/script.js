@@ -1,11 +1,11 @@
-window.onload = () => {
+import GalleryModel from "./model.js";
+
+window.onload = async () => {
     const webGallery = document.querySelector("web-gallery");
     const webGalleryDetail = document.querySelector("web-gallery-detail");
 
     webGallery.addEventListener("item-clicked", (event) => {
         webGalleryDetail.data = event.detail.data;
-
-
 
         webGallery.style.opacity=0;
         webGallery.style.transform = "rotateY(-180deg)";
@@ -29,6 +29,26 @@ window.onload = () => {
     });
 
 
+
+    const galleryModel = new GalleryModel();
+    await galleryModel.initialize("assets/gallery_data.json");
+    webGallery.data = galleryModel.data;
     webGallery.currentItem = 2;
-    webGallery.dataURL = "assets/gallery_data.json";
+
+
+    document.querySelector("#updater").onsubmit = (ev) => {
+
+        ev.preventDefault();
+
+        const title = document.querySelector("#title").value;
+        const desc = document.querySelector("#desc").value;
+        const url = document.querySelector("#url").value;
+
+        galleryModel.addItem({
+            title: title,
+            description: desc,
+            imageUrl: url
+        });
+        webGallery.data = galleryModel.data;
+    }
 }

@@ -20,13 +20,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     width: 100%;
     height: 100dvh;
     perspective: 800px;
 }
 
 web-gallery {
-    position: absolute;
+    position: relative;
     transform: rotateY(0);
     transition: transform var(--speed) ease-in-out, opacity var(--speed) ease-in-out;
 }
@@ -38,4 +39,14 @@ web-gallery-detail {
     transform: rotateY(180deg);
     transition: transform var(--speed) ease-in-out,
         opacity var(--speed) ease-in-out;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+}
+
+input {
+    margin-bottom: 10px;
 }
