@@ -161,7 +161,7 @@ taskItemTemplate.innerHTML = `
 </style>
 <div class="button">
     <div class="front">
-        <label>Examples</label>
+        <label></label>
         <div class="icon">
             <svg width="100%" height="100%" viewBox="0 0 24.342 24.342" fill="var(--color-text-dark)">
                 <path
@@ -185,6 +185,8 @@ taskItemTemplate.innerHTML = `
 `
 class TaskItem extends HTMLElement {
 
+    static observedAttributes = ['title'];
+
     shadowRoot;
     button;
     #front;
@@ -207,6 +209,13 @@ class TaskItem extends HTMLElement {
         this.button.onmousedown = (ev) => this.#mouseDown(ev);
         this.button.onclick = () => {
             if(this.#currentX === 0) this.dispatchEvent(new CustomEvent("clicked"));
+        }
+    }
+
+    attributeChangedCallback(attrName, oldVal, newVal) {
+
+        if(attrName === "title") {
+            this.shadowRoot.querySelector("label").innerText = newVal;
         }
     }
 
@@ -239,5 +248,99 @@ class TaskItem extends HTMLElement {
 
         this.#front.style.transform = `translateX(-${this.#currentX}px)`;
     }
+
+    get title() {
+        return this.getAttribute("title");
+    }
+    set title(val) {
+        this.setAttribute("title", val);
+    }
 }
-customElements.define("task-item", TaskItem);
+customElements.define("task-item", TaskItem); 
+
+/**CHECK ITEM */
+const checkItemTemplate = document.createElement("template");
+checkItemTemplate.innerHTML = `
+<style>
+    @import url("system.css");
+
+    .button {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        cursor: pointer;
+    }
+
+    .button:active .front label,
+    .button:active .front .icon {
+        transform: scale(0.9);
+    }
+
+    .front {
+        position: absolute;
+        display: flex;
+        inset: 0;
+        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #dddddd;
+        padding: 20px;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    label {
+        font-size: clamp(32px, 4vw, 48px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        user-select: none;
+        color: var(--color-text-dark);
+    }
+
+    .icon {
+        width: clamp(32px, 4vw, 48px);
+        height: clamp(32px, 4vw, 48px);
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    .back {
+        display: flex;
+        justify-content: flex-end;
+        background-color: var(--color-secondary);
+        padding: 20px;
+    }
+</style>
+<div class="button">
+    <div class="front">
+        <label></label>
+        <div class="icon">
+            <svg width="100%" height="100%" viewBox="0 0 24.342 24.342" fill="var(--color-text-dark)">
+                <path
+                    d="m12.164 3.25e-7 12.177 12.171-12.177 12.171-3.6954-3.6954 5.8624-5.8624h-14.331v-5.226h14.331l-5.8624-5.8624z" />
+            </svg>
+        </div>
+    </div>
+
+    <div class="back">
+        <div class="icon">
+            <svg width="100%" height="100%" viewBox="0 0 24.342 24.342" fill="var(--color-text-light)">
+                <path
+                    d="m12.171 8.4754-8.4754-8.4754-3.6954 3.6954 8.4754 8.4754-8.4754 8.4754 3.6954 3.6954 8.4754-8.4754 8.4754 8.4754 3.6954-3.6954-8.4754-8.4754 8.4754-8.4754-3.6954-3.6954z" />
+            </svg>
+        </div>
+    </div>
+
+</div>
+`;
+
+class CheckItem extends HTMLElement {
+
+    shadowRoot;
+    constructor() {
+        super();
+        this.shadowRoot = this.attachShadow({mode:'closed'});
+        this.shadowRoot.append(checkItemTemplate.content.cloneNode(true));
+    }
+}
+customElements.define("check-item", CheckItem);

@@ -1,18 +1,18 @@
 export default class TodoModel {
-    #data = [
+    #tasks = [
         {
             title: "Task 1",
-            task: [
+            items: [
                 {
-                    item: "Item 1",
+                    title: "Item 1",
                     checked: "false"
                 },
                 {
-                    item: "Item 2",
+                    title: "Item 2",
                     checked: "false"
                 },
                 {
-                    item: "Item 3",
+                    title: "Item 3",
                     checked: "false"
                 }
             ]
@@ -20,15 +20,18 @@ export default class TodoModel {
     ];
 
     constructor() {
-        localStorage.setItem("todos", JSON.stringify(this.#data));
+
+        if(!localStorage.getItem("todos")){ 
+            localStorage.setItem("todos", JSON.stringify(this.#tasks));
+        }
     }
 
     addTask(task) {
-        this.#data.push(task);
+        this.#tasks.push(task);
         this.#updateLocalStorage();
     }
     deleteTask(index) {
-        this.#data.splice(index, 1);
+        this.#tasks.splice(index, 1);
         this.#updateLocalStorage();
     }
     getTasks() {
@@ -36,6 +39,6 @@ export default class TodoModel {
     }
 
     #updateLocalStorage() {
-        localStorage.setItem("todos", JSON.stringify(this.#data));
+        localStorage.setItem("todos", JSON.stringify(this.#tasks));
     }
 }
