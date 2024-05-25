@@ -26,6 +26,7 @@ export default class TodoModel {
         }
     }
 
+    /** TASKS */
     addTask(task) {
         this.#tasks.push(task);
         this.#updateLocalStorage();
@@ -36,6 +37,24 @@ export default class TodoModel {
     }
     getTasks() {
         return JSON.parse(localStorage.getItem("todos"));
+    }
+
+    /** ITEMS */
+    addItem(taskIndex, item) {
+        this.#tasks[taskIndex].items.push(item);
+        this.#updateLocalStorage();
+    }
+    deleteItem(taskIndex, itemIndex) {
+
+        this.#tasks[taskIndex].items.splice(itemIndex, 1);
+        this.#updateLocalStorage();
+    }
+    updateItem(taskIndex, itemIndex, val) {
+        this.#tasks[taskIndex].items[itemIndex].checked = val;
+        this.#updateLocalStorage();
+    }
+    getItems(taskIndex) {
+        return this.#tasks[taskIndex].items;
     }
 
     #updateLocalStorage() {

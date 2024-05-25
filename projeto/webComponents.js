@@ -105,6 +105,69 @@ class TodoHeader extends HTMLElement {
 }
 customElements.define("todo-header", TodoHeader);
 
+
+/** ITEM */
+class Item extends HTMLElement {
+
+    shadowRoot;
+    button;
+    front;
+    #touchX;
+    #maxX = 84;
+    #currentX;
+
+    constructor() {
+        super();
+
+        this.shadowRoot = this.attachShadow({mode:'closed'});
+    }
+
+    initialize() {
+
+        this.button = this.shadowRoot.querySelector(".button");
+        this.front = this.shadowRoot.querySelector(".front");
+
+        this.mouseUp = this.mouseUp.bind(this);
+        this.mouseMove = this.mouseMove.bind(this);
+
+        this.button.onmousedown = (ev) => this.#mouseDown(ev);
+        this.button.onclick = () => {
+            if(this.#currentX === 0) this.dispatchEvent(new CustomEvent("clicked"));
+        }
+    }
+
+    #mouseDown(ev) {
+
+        this.#touchX = ev.x
+        document.addEventListener("mouseup", this.mouseUp);
+        document.addEventListener("mousemove", this.mouseMove);
+        this.front.style.transition = 'none';
+        this.#currentX = 0;
+    }
+
+    mouseUp() {
+
+        document.removeEventListener("mouseup", this.mouseUp);
+        document.removeEventListener("mousemove", this.mouseMove);
+
+        if(this.#currentX === this.#maxX) this.dispatchEvent(new CustomEvent("delete"));
+
+        this.front.style.transition = 'transform .15s ease-in-out';
+        this.front.style.transform = 'translateX(0)';
+
+        this.#touchX = 0;
+    }
+    mouseMove(ev) {
+
+        this.#currentX = this.#touchX - ev.x;
+        if(this.#currentX < 0) this.#currentX = 0;
+        if(this.#currentX > this.#maxX) this.#currentX = this.#maxX;
+
+        this.front.style.transform = `translateX(-${this.#currentX}px)`;
+    }
+}
+
+
 /**TASK ITEM */
 const taskItemTemplate = document.createElement("template");
 taskItemTemplate.innerHTML = `
@@ -183,33 +246,14 @@ taskItemTemplate.innerHTML = `
 
 
 `
-class TaskItem extends HTMLElement {
+class TaskItem extends Item {
 
     static observedAttributes = ['title'];
-
-    shadowRoot;
-    button;
-    #front;
-    #touchX;
-    #maxX = 84;
-    #currentX;
     constructor() {
         super();
 
-        this.shadowRoot = this.attachShadow({mode:'closed'});
         this.shadowRoot.append(taskItemTemplate.content.cloneNode(true));
-
-        this.button = this.shadowRoot.querySelector(".button");
-
-        this.#front = this.shadowRoot.querySelector(".front");
-        
-        this.mouseUp = this.mouseUp.bind(this);
-        this.mouseMove = this.mouseMove.bind(this);
-
-        this.button.onmousedown = (ev) => this.#mouseDown(ev);
-        this.button.onclick = () => {
-            if(this.#currentX === 0) this.dispatchEvent(new CustomEvent("clicked"));
-        }
+        this.initialize();
     }
 
     attributeChangedCallback(attrName, oldVal, newVal) {
@@ -219,35 +263,6 @@ class TaskItem extends HTMLElement {
         }
     }
 
-    #mouseDown(ev) {
-
-        this.#touchX = ev.x
-        document.addEventListener("mouseup", this.mouseUp);
-        document.addEventListener("mousemove", this.mouseMove);
-        this.#front.style.transition = 'none';
-        this.#currentX = 0;
-    }
-
-    mouseUp() {
-
-        document.removeEventListener("mouseup", this.mouseUp);
-        document.removeEventListener("mousemove", this.mouseMove);
-
-        if(this.#currentX === this.#maxX) this.dispatchEvent(new CustomEvent("delete"));
-
-        this.#front.style.transition = 'transform .15s ease-in-out';
-        this.#front.style.transform = 'translateX(0)';
-
-        this.#touchX = 0;
-    }
-    mouseMove(ev) {
-
-        this.#currentX = this.#touchX - ev.x;
-        if(this.#currentX < 0) this.#currentX = 0;
-        if(this.#currentX > this.#maxX) this.#currentX = this.#maxX;
-
-        this.#front.style.transform = `translateX(-${this.#currentX}px)`;
-    }
 
     get title() {
         return this.getAttribute("title");
@@ -268,12 +283,6 @@ checkItemTemplate.innerHTML = `
         position: relative;
         overflow: hidden;
         width: 100%;
-        cursor: pointer;
-    }
-
-    .button:active .front label,
-    .button:active .front .icon {
-        transform: scale(0.9);
     }
 
     .front {
@@ -283,7 +292,7 @@ checkItemTemplate.innerHTML = `
         gap: 10px;
         justify-content: space-between;
         align-items: center;
-        background-color: #dddddd;
+        background-color: var(--color-text-dark);
         padding: 20px;
         transition: transform 0.3s ease-in-out;
     }
@@ -294,7 +303,7 @@ checkItemTemplate.innerHTML = `
         overflow: hidden;
         text-overflow: ellipsis;
         user-select: none;
-        color: var(--color-text-dark);
+        color: var(--color-text-light);
     }
 
     .icon {
@@ -302,6 +311,14 @@ checkItemTemplate.innerHTML = `
         height: clamp(32px, 4vw, 48px);
         min-width: 32px;
         min-height: 32px;
+    }
+    .checkbox {
+        background-color: var(--color-text-light);
+        padding: 5px;
+        cursor: pointer;
+    }
+    .checkbox svg {
+        display: none;
     }
 
     .back {
@@ -314,10 +331,9 @@ checkItemTemplate.innerHTML = `
 <div class="button">
     <div class="front">
         <label></label>
-        <div class="icon">
+        <div class="checkbox icon">
             <svg width="100%" height="100%" viewBox="0 0 24.342 24.342" fill="var(--color-text-dark)">
-                <path
-                    d="m12.164 3.25e-7 12.177 12.171-12.177 12.171-3.6954-3.6954 5.8624-5.8624h-14.331v-5.226h14.331l-5.8624-5.8624z" />
+                <path d="m20.497 2.6458 3.8447 3.865-15.105 15.185-9.2366-9.2856 3.8447-3.865 5.3919 5.4205z"/>
             </svg>
         </div>
     </div>
@@ -334,13 +350,63 @@ checkItemTemplate.innerHTML = `
 </div>
 `;
 
-class CheckItem extends HTMLElement {
+class CheckItem extends Item {
 
-    shadowRoot;
+    static observedAttributes = ['title', 'checked'];
+
+    #checkbox;
+    #checkicon;
+    #isChecked;
     constructor() {
         super();
-        this.shadowRoot = this.attachShadow({mode:'closed'});
+        
         this.shadowRoot.append(checkItemTemplate.content.cloneNode(true));
+
+        this.#checkbox = this.shadowRoot.querySelector(".checkbox");
+        this.#checkicon = this.#checkbox.querySelector("svg");
+
+        this.#checkbox.onclick = () => {
+
+            this.#isChecked = this.#isChecked === "true" ? "false" : "true";
+
+            this.dispatchEvent(new CustomEvent("checked", {detail: {
+                checked: this.#isChecked
+            }}));
+
+            this.#checkicon.style.display = this.#isChecked === "true" ? "block" : "none";
+        }
+
+        this.initialize();
+    }
+
+    attributeChangedCallback(attrName, oldVal, newVal) {
+        switch (attrName) {
+            case 'title':
+                this.shadowRoot.querySelector("label").innerText = newVal;
+                break;
+            case 'checked':
+                this.#isChecked = newVal;
+                this.#checkicon.style.display = this.#isChecked === "true" ? "block" : "none";
+                break;
+        
+            default:
+                break;
+        }
+    }
+
+    get checked() {
+        return this.getAttribute("checked");
+    }
+
+    set checked(val) {
+        this.setAttribute("checked", val);
+    }
+
+    get title() {
+        return this.getAttribute("title");
+    }
+    set title(val) {
+        this.setAttribute("title", val);
     }
 }
 customElements.define("check-item", CheckItem);
