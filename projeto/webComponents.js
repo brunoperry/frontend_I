@@ -424,7 +424,7 @@ todoModalTemplate.innerHTML = `
     }
 
     :host {
-        display: flex;
+        display: none;
         justify-content: center;
         align-items: center;
     }
@@ -433,7 +433,7 @@ todoModalTemplate.innerHTML = `
         background-color: var(--color-text-dark);
         mix-blend-mode: multiply;
         backdrop-filter: blur(3px);
-        opacity: 0;
+        
         transition: opacity var(--speed) ease-in-out;
     }
 
@@ -523,6 +523,41 @@ class TodoModal extends HTMLElement {
         this.shadowRoot = this.attachShadow({mode: "closed"});
         this.shadowRoot.append(todoModalTemplate.content.cloneNode(true));
 
+        this.shadowRoot.querySelector("#overlay").onclick = () => {
+            this.hide();
+        }
+        this.shadowRoot.querySelector("#cancel").onclick = () => {
+            this.hide();
+        }
+
+        const input = this.shadowRoot.querySelector("input");
+        this.shadowRoot.querySelector("#confirm").onclick = () => {
+            if(input.value.trim() === "") return;
+
+            this.dispatchEvent(new CustomEvent("confirm", {
+                detail: {
+                    value: input.value
+                }
+            }));
+            this.hide();
+        }
+    }
+
+    show(state) {
+
+        let title;
+        if(state === "tasks") {
+            title = "Add Task";
+        } else {
+            title = "Add Item";
+        }
+        this.shadowRoot.querySelector("h2").innerText = title;
+        this.style.display = "flex";
+    }
+
+    hide() {
+        this.shadowRoot.querySelector("input").value = "";
+        this.style.display = "none";
     }
 }
 customElements.define("todo-modal", TodoModal);

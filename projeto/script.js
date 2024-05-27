@@ -8,12 +8,37 @@ window.onload = async () => {
 
     // O teu código aqui...
     const listsContainer = document.querySelector("#lists-container");
+    const lists = document.querySelectorAll("ul");
+    lists.forEach(ul => {
+        ul.style.height = `${listsContainer.offsetHeight}px`;
+    });
     const todoHeader = document.querySelector("todo-header");
+    todoHeader.state = "tasks";
     todoHeader.addEventListener("clicked", () => {
         listsContainer.style.transform = "translateX(0)";
         todoHeader.state = "tasks";
         buildTasksList(model.getTasks());
     });
+
+    //MODAL
+    const todoModal = document.querySelector("todo-modal");
+    todoModal.addEventListener("confirm", (ev) => {
+        if(todoHeader.getAttribute("state") === "tasks") {
+            model.addTask(ev.detail.value);
+            buildTasksList(model.getTasks());
+        } else {
+            console.log(currentTaskIndex);
+            model.addItem(currentTaskIndex, ev.detail.value);
+            buildItemsList(model.getItems(currentTaskIndex));
+        }
+    })
+
+
+    //FOOTER
+    const footer = document.querySelector("footer");
+    footer.onclick = () => {
+        todoModal.show(todoHeader.getAttribute("state"));
+    }
 
     
     const buildTasksList = (tasks) => {
